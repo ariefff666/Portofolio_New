@@ -11,7 +11,7 @@ React TypeScript, Tailwind CSS, and Supabase.
    npm install
    ```
 
-2. Copy environment names and fill local values when Supabase integration begins:
+2. Copy environment names and fill local values:
 
    ```bash
    cp .env.example .env.local
@@ -33,9 +33,10 @@ React TypeScript, Tailwind CSS, and Supabase.
 
 ## Notes
 
-- Supabase clients, data fetching, admin authentication, animations, and 3D are not
-  implemented in this foundation phase.
+- Supabase client helpers are available in `src/lib/supabase/`, but CRUD, data
+  fetching, admin UI, animations, and 3D are not implemented yet.
 - The active database migration remains
   `supabase/migrations/20260602000200_portfolio_schema_v2.sql`.
 - Public pages should default to Server Components. Use Client Components only for
   interactions, forms, Motion, and WebGL.
+- See `supabase/README.md` for migration, type generation, and first admin user setup.
