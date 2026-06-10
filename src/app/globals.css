@@ -1,0 +1,106 @@
+@import "tailwindcss";
+
+:root {
+  color-scheme: dark;
+  --bg-void: #030712;
+  --bg-navy: #071426;
+  --bg-elevated: #0d2138;
+  --panel: rgba(8, 24, 42, 0.76);
+  --panel-solid: #0a1a2d;
+  --line: rgba(104, 205, 255, 0.22);
+  --line-strong: rgba(104, 205, 255, 0.44);
+  --cyan: #55e6ff;
+  --blue: #2f7bff;
+  --red: #ff5c6c;
+  --text: #eaf7ff;
+  --muted: #91a5b7;
+  --success: #63e6be;
+  --warning: #ffd166;
+  --container-max: 90rem;
+  --container-gutter: clamp(1.25rem, 4vw, 4rem);
+  --section-space: clamp(4.5rem, 10vw, 8rem);
+  --radius-panel: 0.75rem;
+  --radius-control: 0.5rem;
+  --radius-chip: 0.25rem;
+  --focus-ring: 0 0 0 2px var(--bg-void), 0 0 0 4px var(--cyan);
+  --duration-fast: 160ms;
+  --duration-base: 220ms;
+}
+
+@theme inline {
+  --color-bg-void: var(--bg-void);
+  --color-bg-navy: var(--bg-navy);
+  --color-bg-elevated: var(--bg-elevated);
+  --color-panel: var(--panel);
+  --color-panel-solid: var(--panel-solid);
+  --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+  --color-cyan: var(--cyan);
+  --color-blue: var(--blue);
+  --color-red: var(--red);
+  --color-text: var(--text);
+  --color-muted: var(--muted);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --radius-panel: var(--radius-panel);
+  --radius-control: var(--radius-control);
+  --radius-chip: var(--radius-chip);
+  --font-sans: var(--font-space-grotesk), "Inter", "Segoe UI", Arial, sans-serif;
+  --font-mono: var(--font-jetbrains-mono), "Cascadia Code", "SFMono-Regular", Consolas,
+    monospace;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  min-width: 320px;
+}
+
+body {
+  min-width: 320px;
+  background:
+    radial-gradient(circle at 72% 12%, rgba(85, 230, 255, 0.12), transparent 26rem),
+    linear-gradient(to right, rgba(104, 205, 255, 0.05) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(104, 205, 255, 0.05) 1px, transparent 1px),
+    var(--bg-void);
+  background-size: 32px 32px;
+  font-family: var(--font-sans);
+}
+
+::selection {
+  background: var(--cyan);
+  color: var(--bg-void);
+}
+
+:focus-visible {
+  outline: 2px solid var(--cyan);
+  outline-offset: 3px;
+}
+
+.orbital-container {
+  margin-inline: auto;
+  max-width: var(--container-max);
+  padding-inline: var(--container-gutter);
+  width: 100%;
+}
+
+.orbital-section {
+  padding-block: var(--section-space);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
+}

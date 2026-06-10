@@ -1,0 +1,35 @@
+docs/
+content/
+downloads/
+
+# Dependencies
+node_modules/
+
+# Next.js
+.next/
+out/
+build/
+
+# Production
+dist/
+
+# Local environment files
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+!.env.example
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+.next-dev*.log
+
+# Local test artifacts
+.playwright-mcp/
+
+# TypeScript
+*.tsbuildinfo
