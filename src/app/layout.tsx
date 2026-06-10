@@ -20,7 +20,7 @@ export const metadata: Metadata = {
     template: "%s | MAP // Mission Console",
   },
   description:
-    "Foundation scaffold for a personal portfolio built with Next.js and Supabase.",
+    "Personal portfolio shell built with Next.js, React TypeScript, Tailwind CSS, and Supabase.",
   icons: {
     icon: "/favicon.svg",
   },
