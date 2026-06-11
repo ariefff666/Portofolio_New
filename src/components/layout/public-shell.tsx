@@ -25,7 +25,7 @@ export function PublicShell({
   socialLinks,
 }: PublicShellProps) {
   return (
-    <div className="min-h-dvh">
+    <div className="relative z-10 min-h-dvh">
       <PublicHeader cvHref={cvHref} />
       {children}
       <PublicFooter

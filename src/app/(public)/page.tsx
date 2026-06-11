@@ -1,4 +1,3 @@
-import Image from "next/image";
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import { PublicShell, SectionShell } from "@/components/layout";
@@ -7,12 +6,14 @@ import {
   DataChip,
   EmptyState,
   PrimaryButton,
-  SectionHeading,
   SecondaryButton,
   StatusBadge,
   TextArea,
   TextField,
 } from "@/components/ui";
+import { HolographicPlanetCore } from "@/components/visual/holographic-planet-core.client";
+import { MissionTabs } from "@/components/sections/mission-tabs.client";
+import { ProfileSignalCard } from "@/components/sections/profile-signal-card.client";
 import { cn } from "@/lib/utils";
 import {
   getPortfolioContent,
@@ -23,7 +24,6 @@ import {
   type SkillGroup,
   type SocialLink,
 } from "@/lib/repository/content";
-import profilePhoto from "../../../assets/foto-profil/Arief.jpeg";
 
 export const metadata: Metadata = {
   title: {
@@ -35,11 +35,17 @@ export const metadata: Metadata = {
 
 type AnchorButtonProps = {
   children: ReactNode;
+  className?: string;
   href: string;
   variant?: "primary" | "secondary";
 };
 
-function AnchorButton({ children, href, variant = "primary" }: AnchorButtonProps) {
+function AnchorButton({
+  children,
+  className,
+  href,
+  variant = "primary",
+}: AnchorButtonProps) {
   const classes =
     "inline-flex min-h-11 items-center justify-center rounded-control px-5 py-2.5 font-mono text-sm font-semibold uppercase tracking-[0.12em] transition duration-200 focus-visible:shadow-[var(--focus-ring)] motion-reduce:transition-none";
 
@@ -50,6 +56,7 @@ function AnchorButton({ children, href, variant = "primary" }: AnchorButtonProps
         variant === "primary"
           ? "border border-cyan bg-cyan text-bg-void hover:bg-text"
           : "border border-line-strong bg-bg-navy/60 text-cyan hover:border-cyan hover:bg-cyan/10",
+        className,
       )}
       href={href}
     >
@@ -58,15 +65,44 @@ function AnchorButton({ children, href, variant = "primary" }: AnchorButtonProps
   );
 }
 
-function socialMark(label: SocialLink["label"]) {
-  const marks: Record<SocialLink["label"], string> = {
-    Email: "@",
-    GitHub: "GH",
-    Instagram: "IG",
-    LinkedIn: "IN",
-  };
+function SectionLabel({ children }: { children: ReactNode }) {
+  return (
+    <div className="border-l border-line pl-5">
+      <p className="font-mono text-sm font-semibold uppercase tracking-[0.22em] text-cyan">
+        {children}
+      </p>
+    </div>
+  );
+}
 
-  return marks[label];
+function SocialGlyph({ label }: { label: SocialLink["label"] }) {
+  if (label === "GitHub") {
+    return (
+      <svg aria-hidden="true" className="h-5 w-5" fill="currentColor" viewBox="0 0 24 24">
+        <path d="M12 2C6.48 2 2 6.58 2 12.23c0 4.52 2.87 8.35 6.84 9.7.5.1.68-.22.68-.49 0-.24-.01-1.04-.01-1.9-2.78.62-3.37-1.22-3.37-1.22-.45-1.18-1.11-1.5-1.11-1.5-.91-.64.07-.63.07-.63 1 .07 1.53 1.06 1.53 1.06.89 1.56 2.34 1.11 2.91.85.09-.66.35-1.11.63-1.36-2.22-.26-4.55-1.14-4.55-5.06 0-1.12.39-2.03 1.03-2.75-.1-.26-.45-1.3.1-2.71 0 0 .84-.28 2.75 1.05A9.31 9.31 0 0 1 12 6.93c.85 0 1.71.12 2.51.34 1.9-1.33 2.74-1.05 2.74-1.05.55 1.41.2 2.45.1 2.71.64.72 1.03 1.63 1.03 2.75 0 3.93-2.34 4.8-4.57 5.05.36.32.68.94.68 1.9 0 1.37-.01 2.47-.01 2.81 0 .27.18.59.69.49A10.05 10.05 0 0 0 22 12.23C22 6.58 17.52 2 12 2Z" />
+      </svg>
+    );
+  }
+
+  if (label === "LinkedIn") {
+    return (
+      <svg aria-hidden="true" className="h-5 w-5" fill="currentColor" viewBox="0 0 24 24">
+        <path d="M5.37 3.5a2.37 2.37 0 1 1 0 4.74 2.37 2.37 0 0 1 0-4.74ZM3.38 9.79h3.98V20.5H3.38V9.79Zm6.1 0h3.82v1.46h.05c.53-.95 1.84-1.77 3.51-1.77 3.78 0 4.76 2.23 4.76 5.65v5.37h-3.98v-4.76c0-1.25-.05-2.85-1.91-2.85-1.92 0-2.28 1.37-2.28 2.76v4.85H9.48V9.79Z" />
+      </svg>
+    );
+  }
+
+  if (label === "Instagram") {
+    return (
+      <svg aria-hidden="true" className="h-5 w-5" fill="none" viewBox="0 0 24 24">
+        <rect height="16" rx="5" stroke="currentColor" strokeWidth="2" width="16" x="4" y="4" />
+        <circle cx="12" cy="12" r="3.4" stroke="currentColor" strokeWidth="2" />
+        <circle cx="16.8" cy="7.2" fill="currentColor" r="1.1" />
+      </svg>
+    );
+  }
+
+  return <span aria-hidden="true" className="font-mono text-sm">@</span>;
 }
 
 function SocialIconLink({ href, label }: SocialLink) {
@@ -78,7 +114,7 @@ function SocialIconLink({ href, label }: SocialLink) {
       rel={href.startsWith("http") ? "noreferrer" : undefined}
       target={href.startsWith("http") ? "_blank" : undefined}
     >
-      <span aria-hidden="true">{socialMark(label)}</span>
+      <SocialGlyph label={label} />
     </a>
   );
 }
@@ -114,30 +150,9 @@ function VisualFallback({
 
 function HeroVisual() {
   return (
-    <ConsolePanel
-      className="min-h-full"
-      contentClassName="p-0"
-      eyebrow="Orbital Console"
-      title="Holographic Data Core"
-      variant="glass"
-    >
-      <div className="relative isolate min-h-[30rem] overflow-hidden">
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(85,230,255,0.08)_1px,transparent_1px),linear-gradient(to_bottom,rgba(85,230,255,0.08)_1px,transparent_1px)] bg-[size:34px_34px]" />
-        <div className="absolute left-1/2 top-1/2 h-64 w-64 -translate-x-1/2 -translate-y-1/2 rounded-full border border-cyan/40 bg-cyan/10 shadow-[0_0_80px_rgba(85,230,255,0.16)]" />
-        <div className="absolute left-1/2 top-1/2 h-40 w-40 -translate-x-1/2 -translate-y-1/2 rounded-full border border-blue/45 bg-blue/10" />
-        <div className="absolute left-[17%] top-[22%] h-4 w-4 rounded-full bg-cyan shadow-[0_0_24px_rgba(85,230,255,0.7)]" />
-        <div className="absolute right-[18%] top-[30%] h-3 w-3 rounded-full bg-success shadow-[0_0_20px_rgba(99,230,190,0.6)]" />
-        <div className="absolute bottom-[25%] left-[26%] h-3 w-3 rounded-full bg-blue shadow-[0_0_22px_rgba(47,123,255,0.62)]" />
-        <div className="absolute bottom-[20%] right-[22%] h-4 w-4 rounded-full bg-warning shadow-[0_0_24px_rgba(255,209,102,0.5)]" />
-        <div className="absolute left-[18%] right-[18%] top-[35%] border-t border-cyan/35" />
-        <div className="absolute left-[25%] right-[24%] top-[64%] border-t border-blue/35" />
-        <div className="absolute left-[28%] top-[24%] h-[52%] w-px rotate-[28deg] bg-cyan/25" />
-        <div className="absolute right-[29%] top-[27%] h-[48%] w-px rotate-[-31deg] bg-success/25" />
-        <div className="absolute bottom-5 left-5 rounded-chip border border-line bg-bg-void/70 px-3 py-1.5 font-mono text-xs uppercase tracking-[0.16em] text-muted">
-          Neural constellation
-        </div>
-      </div>
-    </ConsolePanel>
+    <div className="h-28 sm:h-48 md:h-[17rem] lg:h-[min(44svh,27rem)] lg:min-h-[22rem]">
+      <HolographicPlanetCore />
+    </div>
   );
 }
 
@@ -152,31 +167,35 @@ function HeroSection({
   const positioning = [profile.location, profile.program, profile.university].filter(Boolean);
 
   return (
-    <SectionShell className="border-t-0 pt-14 sm:pt-20 lg:pt-24" id="home">
+    <SectionShell
+      className="flex min-h-[calc(100svh-73px)] items-center border-t-0 py-4 sm:py-5 lg:py-8"
+      id="home"
+    >
       <div className="orbital-container">
-        <div className="grid gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(22rem,30rem)] lg:items-center">
-          <div className="max-w-4xl">
-            <div className="mb-6 flex flex-wrap items-center gap-3">
+        <div className="grid gap-4 md:grid-cols-[minmax(0,1fr)_17rem] md:items-center lg:grid-cols-[minmax(0,0.98fr)_minmax(19rem,25rem)] xl:gap-8">
+          <div className="max-w-3xl">
+            <div className="mb-3 flex flex-wrap items-center gap-2">
               <StatusBadge>{profile.availability || "Availability pending"}</StatusBadge>
-              <DataChip variant="blue">{profile.role || "Role pending"}</DataChip>
+              <DataChip className="hidden sm:inline-flex" variant="blue">
+                {profile.role || "Role pending"}
+              </DataChip>
             </div>
-            <p className="font-mono text-sm font-medium uppercase tracking-[0.2em] text-cyan">
-              MAP // Mission Console
-            </p>
-            <h1 className="mt-4 max-w-4xl text-[clamp(3rem,8vw,7rem)] font-semibold leading-[0.98] tracking-normal text-text">
+            <h1 className="max-w-3xl text-[clamp(2.15rem,8vw,4.65rem)] font-semibold leading-[0.98] tracking-normal text-text lg:text-[clamp(3.4rem,5.6vw,4.85rem)]">
               {profile.name || "Portfolio console"}
             </h1>
-            <p className="mt-6 max-w-3xl text-lg leading-8 text-muted sm:text-xl">
+            <p className="mt-3 max-w-2xl text-sm leading-6 text-muted sm:text-base sm:leading-7 lg:text-lg">
               {profile.heroDescription ||
                 "Portfolio for research experiments, engineering projects, and practical intelligent systems."}
             </p>
             {positioning.length > 0 ? (
-              <p className="mt-5 max-w-2xl font-mono text-sm uppercase tracking-[0.16em] text-muted">
+              <p className="mt-3 hidden max-w-2xl font-mono text-xs uppercase leading-5 tracking-[0.16em] text-muted sm:block">
                 {positioning.join(" // ")}
               </p>
             ) : null}
-            <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
-              <AnchorButton href="#projects">View Projects</AnchorButton>
+            <div className="mt-4 grid grid-cols-2 gap-2 sm:flex sm:flex-wrap">
+              <AnchorButton className="col-span-2 sm:col-span-1" href="#projects">
+                View Projects
+              </AnchorButton>
               <AnchorButton href="#research" variant="secondary">
                 Explore Research
               </AnchorButton>
@@ -185,7 +204,7 @@ function HeroSection({
               </AnchorButton>
             </div>
             {heroSocials.length > 0 ? (
-              <ul className="mt-7 flex flex-wrap gap-3" aria-label="Profile links">
+              <ul className="mt-3 flex flex-wrap gap-3" aria-label="Profile links">
                 {heroSocials.map((link) => (
                   <li key={`${link.label}-${link.href}`}>
                     <SocialIconLink href={link.href} label={link.label} />
@@ -204,102 +223,52 @@ function HeroSection({
 function MissionControlSection({
   profile,
   organizations,
+  skills,
 }: {
   organizations: OrganizationPreview[];
   profile: Awaited<ReturnType<typeof getPortfolioContent>>["profile"];
+  skills: SkillGroup[];
 }) {
+  const preferredStack = [
+    "Next.js",
+    "Laravel",
+    "Flutter",
+    "Python",
+    "PyTorch",
+    "React",
+    "TypeScript",
+  ];
+  const availableSkills = skills.flatMap((group) => group.skills.map((skill) => skill.name));
+  const stackItems = preferredStack
+    .filter((item) => availableSkills.includes(item))
+    .concat(availableSkills.filter((item) => !preferredStack.includes(item)))
+    .slice(0, 7);
+
   return (
     <SectionShell id="about">
       <div className="orbital-container">
-        <SectionHeading
-          eyebrow="Mission Control"
-          index="01"
-          intro={profile.shortProfile}
-          title="Research direction, engineering discipline, and community context."
-        />
+        <SectionLabel>Mission Control</SectionLabel>
 
-        <div className="mt-10 grid gap-6 lg:grid-cols-[24rem_minmax(0,1fr)]">
-          <ConsolePanel
-            contentClassName="p-0"
-            eyebrow="Operator"
-            title="Profile Signal"
-            variant="glass"
-          >
-            {profile.profilePhotoPath ? (
-              <div className="relative aspect-[4/5] overflow-hidden bg-bg-navy">
-                <Image
-                  alt={profile.name ? `Portrait of ${profile.name}` : "Profile portrait"}
-                  className="h-full w-full object-cover"
-                  placeholder="blur"
-                  sizes="(min-width: 1024px) 24rem, 100vw"
-                  src={profilePhoto}
-                />
-                <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-bg-void/92 to-transparent p-5">
-                  {profile.location ? (
-                    <p className="font-mono text-xs uppercase tracking-[0.18em] text-cyan">
-                      {profile.location}
-                    </p>
-                  ) : null}
-                </div>
-              </div>
-            ) : (
-              <VisualFallback className="aspect-[4/5]" label="Profile signal" />
-            )}
-          </ConsolePanel>
-
-          <div className="grid gap-6">
-            <ConsolePanel eyebrow="Mission Objective" title="Current Trajectory">
-              <p className="text-base leading-7 text-muted">
-                {profile.missionObjective ||
-                  "Portfolio content is being prepared from verified local source files."}
-              </p>
-              {profile.currentFocus.length > 0 ? (
-                <div className="mt-5 flex flex-wrap gap-2">
-                  {profile.currentFocus.map((focus) => (
-                    <DataChip key={focus} variant="cyan">
-                      {focus}
-                    </DataChip>
-                  ))}
-                </div>
-              ) : null}
-            </ConsolePanel>
-
-            <div className="grid gap-6 md:grid-cols-2">
-              <ConsolePanel eyebrow="Personal Mission" title="Operating Principle">
-                <p className="text-sm leading-7 text-muted">
-                  {profile.personalMission ||
-                    "Personal mission copy has not been published yet."}
-                </p>
-              </ConsolePanel>
-              <ConsolePanel eyebrow="Community" title="Active Nodes">
-                {organizations.length > 0 ? (
-                  <ul className="grid gap-3">
-                    {organizations.slice(0, 4).map((organization) => (
-                      <li
-                        className="rounded-control border border-line bg-bg-navy/55 p-3"
-                        key={organization.slug}
-                      >
-                        <p className="text-sm font-semibold text-text">
-                          {organization.name}
-                        </p>
-                        {organization.type ? (
-                          <p className="mt-1 font-mono text-xs uppercase tracking-[0.14em] text-muted">
-                            {organization.type}
-                          </p>
-                        ) : null}
-                      </li>
-                    ))}
-                  </ul>
-                ) : (
-                  <EmptyState
-                    description="Community and organization data has not been published."
-                    eyebrow="No active nodes"
-                    title="Organization list empty"
-                  />
-                )}
-              </ConsolePanel>
-            </div>
-          </div>
+        <div className="mt-8 grid gap-6 lg:grid-cols-[22rem_minmax(0,1fr)] xl:grid-cols-[24rem_minmax(0,1fr)]">
+          <ProfileSignalCard
+            availability={profile.availability}
+            focusItems={profile.currentFocus}
+            hasPhoto={Boolean(profile.profilePhotoPath)}
+            location={profile.location}
+            name={profile.name}
+            program={profile.program}
+            role={profile.role}
+            stackItems={stackItems}
+            university={profile.university}
+          />
+          <MissionTabs
+            communitySummary={profile.communitySummary}
+            currentFocus={profile.currentFocus}
+            missionObjective={profile.missionObjective}
+            organizations={organizations}
+            personalMission={profile.personalMission}
+            researchDirection={profile.shortProfile}
+          />
         </div>
       </div>
     </SectionShell>
@@ -310,15 +279,10 @@ function ResearchPreviewSection({ research }: { research: ResearchPreview[] }) {
   return (
     <SectionShell id="research">
       <div className="orbital-container">
-        <SectionHeading
-          eyebrow="Research Preview"
-          index="02"
-          intro="Selected research records are rendered only from published local content, without invented benchmarks or outcome claims."
-          title="Experiments moving from question to evidence."
-        />
+        <SectionLabel>Research Preview</SectionLabel>
 
         {research.length > 0 ? (
-          <div className="mt-10 grid gap-6 lg:grid-cols-2">
+          <div className="mt-8 grid gap-6 lg:grid-cols-2">
             {research.slice(0, 2).map((item) => (
               <ConsolePanel
                 contentClassName="grid gap-5"
@@ -395,15 +359,10 @@ function ProjectPreviewSection({ projects }: { projects: ProjectPreview[] }) {
   return (
     <SectionShell id="projects">
       <div className="orbital-container">
-        <SectionHeading
-          eyebrow="Project Preview"
-          index="03"
-          intro="Engineering work is presented from local content with missing demo, repository, dataset, and stack fields left intentionally unresolved."
-          title="Systems built for practical workflows."
-        />
+        <SectionLabel>Project Preview</SectionLabel>
 
         {projects.length > 0 ? (
-          <div className="mt-10 grid gap-6 md:grid-cols-2 xl:grid-cols-4">
+          <div className="mt-8 grid gap-6 md:grid-cols-2 xl:grid-cols-4">
             {projects.slice(0, 4).map((project) => (
               <ConsolePanel
                 contentClassName="grid gap-4"
@@ -461,15 +420,10 @@ function SkillPreviewSection({ skills }: { skills: SkillGroup[] }) {
   return (
     <SectionShell id="skills">
       <div className="orbital-container">
-        <SectionHeading
-          eyebrow="Skill Preview"
-          index="04"
-          intro="Skill groups use descriptive levels from the source content. No numeric proficiency score is inferred."
-          title="Capability matrix for research and product work."
-        />
+        <SectionLabel>Skill Preview</SectionLabel>
 
         {publicSkillGroups.length > 0 ? (
-          <div className="mt-10 grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+          <div className="mt-8 grid gap-6 md:grid-cols-2 xl:grid-cols-3">
             {publicSkillGroups.map((group) => (
               <ConsolePanel eyebrow="Capability Cluster" key={group.name} title={group.name}>
                 <ul className="grid gap-3">
@@ -512,14 +466,9 @@ function PublicationPreviewSection({
   return (
     <SectionShell id="publications">
       <div className="orbital-container">
-        <SectionHeading
-          eyebrow="Publication Preview"
-          index="05"
-          intro="Formal publication entries are shown only when the source file marks them as personal publication records."
-          title="Publication pipeline with explicit attribution boundaries."
-        />
+        <SectionLabel>Publication Preview</SectionLabel>
 
-        <div className="mt-10 grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(20rem,28rem)]">
+        <div className="mt-8 grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(20rem,28rem)]">
           <EmptyState
             description={
               publications.emptyState ||
@@ -570,15 +519,10 @@ function ExperiencePreviewSection({
   return (
     <SectionShell id="experience">
       <div className="orbital-container">
-        <SectionHeading
-          eyebrow="Experience Preview"
-          index="06"
-          intro="Featured roles and activities are listed from published experience content without invented rankings or impact metrics."
-          title="Operational record across research, community, and mentoring."
-        />
+        <SectionLabel>Experience Preview</SectionLabel>
 
         {experience.length > 0 ? (
-          <div className="mt-10 grid gap-4">
+          <div className="mt-8 grid gap-4">
             {experience.map((item, index) => (
               <ConsolePanel
                 contentClassName="grid gap-4 md:grid-cols-[10rem_minmax(0,1fr)]"
@@ -623,24 +567,17 @@ function ExperiencePreviewSection({
 
 function ContactTransmissionSection({
   email,
-  profile,
   socialLinks,
 }: {
   email: null | string;
-  profile: Awaited<ReturnType<typeof getPortfolioContent>>["profile"];
   socialLinks: SocialLink[];
 }) {
   return (
     <SectionShell id="contact">
       <div className="orbital-container">
-        <SectionHeading
-          eyebrow="Contact Transmission Preview"
-          index="07"
-          intro={profile.collaborationCopy || profile.availability}
-          title="Open a verified communication channel."
-        />
+        <SectionLabel>Contact Transmission Preview</SectionLabel>
 
-        <div className="mt-10 grid gap-6 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
+        <div className="mt-8 grid gap-6 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
           <ConsolePanel eyebrow="Direct Channel" title="Transmission Routes">
             {email ? (
               <a
@@ -667,7 +604,7 @@ function ContactTransmissionSection({
                       target={link.href.startsWith("http") ? "_blank" : undefined}
                     >
                       <span>{link.label}</span>
-                      <span aria-hidden="true">{socialMark(link.label)}</span>
+                      <SocialGlyph label={link.label} />
                     </a>
                   </li>
                 ))}
@@ -711,14 +648,9 @@ function CommentLogPreviewSection() {
   return (
     <SectionShell id="comments">
       <div className="orbital-container">
-        <SectionHeading
-          eyebrow="Comment Log Preview"
-          index="08"
-          intro="The comment surface is reserved for moderated entries and does not seed fabricated messages."
-          title="Visitor log prepared for verified submissions."
-        />
+        <SectionLabel>Comment Log Preview</SectionLabel>
 
-        <div className="mt-10 grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(20rem,28rem)]">
+        <div className="mt-8 grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(20rem,28rem)]">
           <EmptyState
             description="No approved public comments are available from the current data source."
             eyebrow="Comment log"
@@ -768,6 +700,7 @@ export default async function HomePage() {
         <MissionControlSection
           organizations={content.organizations}
           profile={content.profile}
+          skills={content.skills}
         />
         <ResearchPreviewSection research={content.research} />
         <ProjectPreviewSection projects={content.projects} />
@@ -776,7 +709,6 @@ export default async function HomePage() {
         <ExperiencePreviewSection experience={content.experience} />
         <ContactTransmissionSection
           email={content.links.email}
-          profile={content.profile}
           socialLinks={content.links.socialLinks}
         />
         <CommentLogPreviewSection />
