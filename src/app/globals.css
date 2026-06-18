@@ -295,7 +295,10 @@ body.cursor-reticle-enabled [role="tab"] {
 
 .mission-cursor[data-mode="lock"] .mission-cursor__reticle,
 .mission-cursor[data-mode="external"] .mission-cursor__reticle,
+.mission-cursor[data-mode="filter"] .mission-cursor__reticle,
 .mission-cursor[data-mode="inspect"] .mission-cursor__reticle,
+.mission-cursor[data-mode="navigate"] .mission-cursor__reticle,
+.mission-cursor[data-mode="trace"] .mission-cursor__reticle,
 .mission-cursor[data-mode="drag"] .mission-cursor__reticle {
   height: 2.65rem;
   margin-left: -1.32rem;
@@ -305,6 +308,12 @@ body.cursor-reticle-enabled [role="tab"] {
 
 .mission-cursor[data-mode="external"] .mission-cursor__ring {
   border-color: rgba(99, 230, 190, 0.76);
+}
+
+.mission-cursor[data-mode="filter"] .mission-cursor__ring,
+.mission-cursor[data-mode="navigate"] .mission-cursor__ring,
+.mission-cursor[data-mode="trace"] .mission-cursor__ring {
+  border-color: rgba(255, 209, 102, 0.68);
 }
 
 .mission-cursor[data-mode="drag"] .mission-cursor__ring {
@@ -320,7 +329,10 @@ body.cursor-reticle-enabled [role="tab"] {
 
 .mission-cursor[data-mode="lock"] .mission-cursor__label,
 .mission-cursor[data-mode="external"] .mission-cursor__label,
+.mission-cursor[data-mode="filter"] .mission-cursor__label,
 .mission-cursor[data-mode="inspect"] .mission-cursor__label,
+.mission-cursor[data-mode="navigate"] .mission-cursor__label,
+.mission-cursor[data-mode="trace"] .mission-cursor__label,
 .mission-cursor[data-mode="drag"] .mission-cursor__label,
 .mission-cursor[data-scan="true"] .mission-cursor__label {
   opacity: 1;
@@ -361,6 +373,7 @@ body.cursor-reticle-enabled [role="tab"] {
   body.cursor-reticle-enabled button,
   body.cursor-reticle-enabled [role="button"],
   body.cursor-reticle-enabled [role="tab"],
+  body.cursor-reticle-enabled [data-cursor],
   body.cursor-reticle-enabled .hero-core {
     cursor: none;
   }
@@ -571,6 +584,477 @@ body.cursor-reticle-enabled [role="tab"] {
   right: 1rem;
 }
 
+.research-observatory {
+  isolation: isolate;
+}
+
+.research-observatory::before,
+.research-observatory::after {
+  content: "";
+  inset: 0;
+  pointer-events: none;
+  position: absolute;
+}
+
+.research-observatory::before {
+  background:
+    radial-gradient(circle at 18% 24%, rgba(85, 230, 255, 0.1), transparent 17rem),
+    radial-gradient(circle at 84% 34%, rgba(255, 209, 102, 0.05), transparent 16rem),
+    linear-gradient(to right, rgba(85, 230, 255, 0.055) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(85, 230, 255, 0.045) 1px, transparent 1px);
+  background-size: auto, auto, 28px 28px, 28px 28px;
+  opacity: 0.82;
+}
+
+.research-observatory::after {
+  animation: research-observatory-scan 9s linear infinite;
+  background:
+    linear-gradient(110deg, transparent 0 42%, rgba(85, 230, 255, 0.09) 50%, transparent 58%);
+  transform: translateX(-70%);
+}
+
+.research-signal-overlay {
+  inset: 0;
+  overflow: visible;
+  pointer-events: none;
+  position: absolute;
+  z-index: 2;
+}
+
+.research-signal-line {
+  animation: research-signal-draw 420ms ease-out both;
+  fill: none;
+  stroke: rgba(85, 230, 255, 0.58);
+  stroke-dasharray: 8 10;
+  stroke-linecap: round;
+  stroke-width: 1;
+}
+
+.research-console-indicator {
+  align-items: center;
+  background: rgba(7, 20, 38, 0.72);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-chip);
+  display: inline-flex;
+  font-family: var(--font-mono);
+  gap: 0.5rem;
+  min-height: 2rem;
+  padding: 0.3rem 0.65rem;
+  text-transform: uppercase;
+}
+
+.research-console-indicator span {
+  color: var(--muted);
+  font-size: 0.68rem;
+  letter-spacing: 0.14em;
+}
+
+.research-console-indicator strong {
+  color: var(--cyan);
+  font-size: 0.82rem;
+  letter-spacing: 0.08em;
+}
+
+.research-card {
+  transform: translateY(0);
+}
+
+.research-card:hover,
+.research-card:focus-within,
+.research-card--selected {
+  transform: translateY(-0.28rem);
+}
+
+.research-card--selected {
+  box-shadow: 0 0 0 1px rgba(85, 230, 255, 0.28), 0 0 36px rgba(85, 230, 255, 0.08);
+}
+
+.research-corner {
+  border-color: rgba(85, 230, 255, 0.56);
+  height: 0.85rem;
+  opacity: 0.6;
+  pointer-events: none;
+  position: absolute;
+  transition:
+    inset var(--duration-base) ease,
+    opacity var(--duration-base) ease;
+  width: 0.85rem;
+  z-index: 1;
+}
+
+.research-corner--tl {
+  border-left: 1px solid;
+  border-top: 1px solid;
+  left: 0.9rem;
+  top: 0.9rem;
+}
+
+.research-corner--tr {
+  border-right: 1px solid;
+  border-top: 1px solid;
+  right: 0.9rem;
+  top: 0.9rem;
+}
+
+.research-corner--bl {
+  border-bottom: 1px solid;
+  border-left: 1px solid;
+  bottom: 0.9rem;
+  left: 0.9rem;
+}
+
+.research-corner--br {
+  border-bottom: 1px solid;
+  border-right: 1px solid;
+  bottom: 0.9rem;
+  right: 0.9rem;
+}
+
+.research-card:hover .research-corner,
+.research-card:focus-within .research-corner,
+.research-card--selected .research-corner {
+  opacity: 1;
+}
+
+.research-card:hover .research-corner--tl,
+.research-card:focus-within .research-corner--tl,
+.research-card--selected .research-corner--tl {
+  left: 0.55rem;
+  top: 0.55rem;
+}
+
+.research-card:hover .research-corner--tr,
+.research-card:focus-within .research-corner--tr,
+.research-card--selected .research-corner--tr {
+  right: 0.55rem;
+  top: 0.55rem;
+}
+
+.research-card:hover .research-corner--bl,
+.research-card:focus-within .research-corner--bl,
+.research-card--selected .research-corner--bl {
+  bottom: 0.55rem;
+  left: 0.55rem;
+}
+
+.research-card:hover .research-corner--br,
+.research-card:focus-within .research-corner--br,
+.research-card--selected .research-corner--br {
+  bottom: 0.55rem;
+  right: 0.55rem;
+}
+
+.research-instrument {
+  background:
+    radial-gradient(circle at 50% 48%, rgba(85, 230, 255, 0.09), transparent 52%),
+    linear-gradient(to right, rgba(85, 230, 255, 0.055) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(85, 230, 255, 0.045) 1px, transparent 1px),
+    rgba(15, 39, 61, 0.82);
+  background-size: auto, 22px 22px, 22px 22px, auto;
+  border: 1px solid rgba(104, 205, 255, 0.22);
+  border-radius: var(--radius-control);
+  min-height: 12rem;
+  overflow: hidden;
+  position: relative;
+}
+
+.research-card:hover .research-instrument,
+.research-card:focus-within .research-instrument,
+.research-card--selected .research-instrument {
+  border-color: rgba(85, 230, 255, 0.48);
+}
+
+.research-scan-plane {
+  animation: research-scan-plane 5.8s ease-in-out infinite;
+  background: linear-gradient(to bottom, transparent, rgba(85, 230, 255, 0.24), transparent);
+  height: 28%;
+  inset-inline: 0;
+  position: absolute;
+  top: -28%;
+}
+
+.research-cxr-box,
+.research-vision-box {
+  border: 1px solid rgba(85, 230, 255, 0.7);
+  box-shadow: 0 0 18px rgba(85, 230, 255, 0.12);
+  position: absolute;
+}
+
+.research-cxr-box--primary {
+  height: 32%;
+  left: 34%;
+  top: 32%;
+  width: 26%;
+}
+
+.research-cxr-box--secondary {
+  height: 18%;
+  right: 18%;
+  top: 22%;
+  width: 18%;
+}
+
+.research-vision-box--a {
+  height: 35%;
+  left: 22%;
+  top: 28%;
+  width: 31%;
+}
+
+.research-vision-box--b {
+  height: 22%;
+  right: 18%;
+  top: 42%;
+  width: 22%;
+}
+
+.research-feature-dot {
+  animation: research-dot-pulse 3.8s ease-in-out infinite;
+  background: var(--cyan);
+  border-radius: 999px;
+  box-shadow: 0 0 16px rgba(85, 230, 255, 0.5);
+  height: 0.35rem;
+  position: absolute;
+  width: 0.35rem;
+}
+
+.research-feature-dot--a {
+  left: 24%;
+  top: 28%;
+}
+
+.research-feature-dot--b {
+  right: 26%;
+  top: 34%;
+}
+
+.research-feature-dot--c {
+  bottom: 24%;
+  left: 52%;
+}
+
+.research-token {
+  animation: research-token-flow 6.5s ease-in-out infinite;
+  animation-delay: calc(var(--token-index) * 140ms);
+  border: 1px solid rgba(85, 230, 255, 0.28);
+  border-radius: var(--radius-chip);
+  color: var(--text);
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  left: calc(8% + var(--token-index) * 16%);
+  padding: 0.35rem 0.45rem;
+  position: absolute;
+  top: calc(26% + (var(--token-index) % 2) * 24%);
+}
+
+.research-attention-line {
+  background: linear-gradient(90deg, transparent, rgba(85, 230, 255, 0.45), transparent);
+  height: 1px;
+  left: 18%;
+  position: absolute;
+  transform-origin: left;
+  width: 62%;
+}
+
+.research-attention-line--a {
+  top: 42%;
+  transform: rotate(8deg);
+}
+
+.research-attention-line--b {
+  top: 58%;
+  transform: rotate(-11deg);
+}
+
+.research-cluster-point {
+  animation: research-cluster-pulse 5.5s ease-in-out infinite;
+  animation-delay: var(--point-delay);
+  background: rgba(85, 230, 255, 0.72);
+  border-radius: 999px;
+  height: 0.32rem;
+  left: var(--point-left);
+  position: absolute;
+  top: var(--point-top);
+  width: 0.32rem;
+}
+
+.research-metric-bar {
+  animation: research-bar-breathe 6s ease-in-out infinite;
+  background: linear-gradient(90deg, rgba(47, 123, 255, 0.22), rgba(85, 230, 255, 0.66));
+  border: 1px solid rgba(85, 230, 255, 0.16);
+  border-radius: 999px;
+  display: block;
+  height: 0.72rem;
+  left: 16%;
+  position: relative;
+  top: calc(24% + var(--bar-index, 0) * 12%);
+  width: var(--bar-width);
+}
+
+.research-metric-bar + .research-metric-bar {
+  margin-top: 0.75rem;
+}
+
+.research-pipeline-node {
+  align-items: center;
+  background: rgba(3, 7, 18, 0.62);
+  border: 1px solid rgba(85, 230, 255, 0.4);
+  border-radius: var(--radius-control);
+  color: var(--cyan);
+  display: inline-flex;
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  height: 2.6rem;
+  justify-content: center;
+  left: calc(12% + var(--node-index) * 30%);
+  position: absolute;
+  top: 42%;
+  width: 4rem;
+}
+
+.research-pipeline-node::after {
+  background: rgba(85, 230, 255, 0.32);
+  content: "";
+  height: 1px;
+  left: 100%;
+  position: absolute;
+  top: 50%;
+  width: 2rem;
+}
+
+.research-pipeline-node:last-child::after {
+  display: none;
+}
+
+.research-dossier {
+  animation: research-dossier-open 240ms ease-out both;
+  position: relative;
+  z-index: 4;
+}
+
+.research-page-button {
+  border: 1px solid var(--line);
+  border-radius: var(--radius-control);
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  min-height: 2.25rem;
+  min-width: 2.25rem;
+  padding-inline: 0.75rem;
+  text-transform: uppercase;
+  transition:
+    background var(--duration-base) ease,
+    border-color var(--duration-base) ease,
+    color var(--duration-base) ease;
+}
+
+.research-page-button:hover,
+.research-page-button:focus-visible,
+.research-page-button[aria-current="page"] {
+  background: rgba(85, 230, 255, 0.12);
+  border-color: rgba(85, 230, 255, 0.7);
+  color: var(--cyan);
+}
+
+.research-page-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.42;
+}
+
+@keyframes research-observatory-scan {
+  from {
+    transform: translateX(-72%);
+  }
+  to {
+    transform: translateX(72%);
+  }
+}
+
+@keyframes research-signal-draw {
+  from {
+    opacity: 0;
+    stroke-dashoffset: 48;
+  }
+  to {
+    opacity: 1;
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes research-scan-plane {
+  0% {
+    top: -28%;
+  }
+  45%,
+  65% {
+    top: 48%;
+  }
+  100% {
+    top: 105%;
+  }
+}
+
+@keyframes research-dot-pulse {
+  0%,
+  100% {
+    opacity: 0.45;
+    transform: scale(0.86);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.25);
+  }
+}
+
+@keyframes research-token-flow {
+  0%,
+  100% {
+    opacity: 0.58;
+    transform: translateY(0);
+  }
+  50% {
+    opacity: 1;
+    transform: translateY(-0.3rem);
+  }
+}
+
+@keyframes research-cluster-pulse {
+  0%,
+  100% {
+    opacity: 0.38;
+    transform: scale(0.8);
+  }
+  50% {
+    opacity: 0.9;
+    transform: scale(1.28);
+  }
+}
+
+@keyframes research-bar-breathe {
+  0%,
+  100% {
+    opacity: 0.55;
+    transform: scaleX(0.88);
+  }
+  50% {
+    opacity: 1;
+    transform: scaleX(1);
+  }
+}
+
+@keyframes research-dossier-open {
+  from {
+    opacity: 0;
+    transform: translateY(-0.45rem);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 @keyframes mission-cursor-pulse {
   from {
     opacity: 0.72;
@@ -687,6 +1171,15 @@ body.cursor-reticle-enabled [role="tab"] {
 
 .orbital-section {
   padding-block: var(--section-space);
+}
+
+.research-observatory[data-in-view="false"]::after,
+.research-observatory[data-in-view="false"] .research-scan-plane,
+.research-observatory[data-in-view="false"] .research-feature-dot,
+.research-observatory[data-in-view="false"] .research-token,
+.research-observatory[data-in-view="false"] .research-cluster-point,
+.research-observatory[data-in-view="false"] .research-metric-bar {
+  animation-play-state: paused;
 }
 
 @media (prefers-reduced-motion: reduce) {

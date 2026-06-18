@@ -32,17 +32,64 @@ export type LinkContent = {
   socialLinks: SocialLink[];
 };
 
+export type ResearchArea = {
+  description: string | null;
+  name: string;
+  slug: string;
+};
+
+export type ResearchMetric = {
+  evaluationSplit: string | null;
+  isVerified: boolean;
+  label: string;
+  source: string | null;
+  unit: string | null;
+  value: string;
+};
+
+export type ResearchLink = {
+  href: string | null;
+  label: string;
+  value: string;
+};
+
 export type ResearchPreview = {
+  areaSlugs: string[];
   areas: string[];
   coverPath: string | null;
+  dataset: string | null;
+  datasetHref: string | null;
+  demoHref: string | null;
+  isCxrContext: boolean;
   isFeatured: boolean;
+  limitations: string | null;
+  method: string | null;
+  metrics: ResearchMetric[];
+  objective: string | null;
+  order: number;
+  ownership: "Collaborative Research" | "Exploratory Log" | "Personal Research" | "Research Involvement";
+  paperHref: string | null;
+  repositoryHref: string | null;
+  repositoryLabel: string | null;
+  reproducibilityNote: string | null;
+  resultSummary: string | null;
   slug: string;
+  stage: string;
   status: string;
   summary: string;
   tags: string[];
   title: string;
   tools: string[];
+  typeLabel: string;
   type: string;
+  visualKind:
+    | "cxr"
+    | "dataset"
+    | "evaluation"
+    | "methodology"
+    | "milestone"
+    | "nlp"
+    | "vision";
   year: string | null;
 };
 
@@ -115,6 +162,7 @@ export type PortfolioContent = {
   projects: ProjectPreview[];
   publications: PublicationContent;
   research: ResearchPreview[];
+  researchAreas: ResearchArea[];
   settings: SiteSettings;
   skills: SkillGroup[];
 };
@@ -165,6 +213,14 @@ function publicHref(value: string | undefined) {
   }
 
   return null;
+}
+
+function privateOrExternalLink(value: string | undefined) {
+  const cleaned = cleanValue(value);
+  return {
+    href: publicHref(cleaned),
+    label: cleaned || "",
+  };
 }
 
 function publicEmail(value: string | undefined) {
@@ -342,6 +398,71 @@ function dateLabel(start: string | undefined, end: string | undefined) {
   return startDate || endDate || "Date unavailable";
 }
 
+function normalizeResearchType(value: string) {
+  const cleaned = cleanValue(value).toLowerCase();
+
+  if (cleaned === "evaluasi-model") return "Model Evaluation";
+  if (cleaned === "metodologi") return "Methodology Note";
+  if (cleaned === "milestone") return "Milestone";
+  if (cleaned === "dataset") return "Dataset Exploration";
+  if (cleaned === "catatan") return "Research Log";
+  if (cleaned === "penelitian") return "Research Involvement";
+  if (cleaned === "eksperimen") return "Experiment";
+  return cleaned ? cleaned.replace(/(^|\s)\S/g, (letter) => letter.toUpperCase()) : "Research";
+}
+
+function inferResearchOwnership(slug: string, title: string, type: string) {
+  const haystack = `${slug} ${title} ${type}`.toLowerCase();
+
+  if (haystack.includes("idspider") || haystack.includes("text-to-sql")) {
+    return "Research Involvement" as const;
+  }
+
+  if (haystack.includes("emotion") || haystack.includes("explor")) {
+    return "Exploratory Log" as const;
+  }
+
+  if (haystack.includes("collaborative")) {
+    return "Collaborative Research" as const;
+  }
+
+  return "Personal Research" as const;
+}
+
+function inferResearchStage(slug: string, resultSummary: string, ownership: ResearchPreview["ownership"]) {
+  const cleaned = resultSummary.toLowerCase();
+
+  if (cleaned.includes("in progress") || slug.includes("rfdetr")) {
+    return "IN PROGRESS";
+  }
+
+  if (ownership === "Research Involvement") {
+    return "RESEARCH INVOLVEMENT";
+  }
+
+  if (ownership === "Exploratory Log") {
+    return "EXPLORATORY LOG";
+  }
+
+  return "PUBLISHED LOG";
+}
+
+function inferResearchVisualKind(
+  areaSlugs: string[],
+  type: string,
+  isCxrContext: boolean,
+): ResearchPreview["visualKind"] {
+  const normalizedType = cleanValue(type).toLowerCase();
+
+  if (isCxrContext || areaSlugs.includes("medical-ai")) return "cxr";
+  if (normalizedType === "evaluasi-model") return "evaluation";
+  if (normalizedType === "metodologi") return "methodology";
+  if (normalizedType === "milestone") return "milestone";
+  if (normalizedType === "dataset" || areaSlugs.includes("dataset")) return "dataset";
+  if (areaSlugs.includes("nlp")) return "nlp";
+  return "vision";
+}
+
 async function getProfile(): Promise<ProfileContent> {
   const markdown = await readContentFile("profil.md");
   const rows = parseTwoColumnRows(markdown);
@@ -390,28 +511,107 @@ async function getLinks(): Promise<LinkContent> {
   };
 }
 
-async function getResearch(): Promise<ResearchPreview[]> {
+async function getResearchAreas(): Promise<ResearchArea[]> {
   const markdown = await readContentFile("riset.md");
+  const rows = parseMarkdownTableAfterHeading(markdown, "## Research Area");
+
+  return rows
+    .filter((row) => isYes(row["Aktif?"]) && cleanValue(row.Slug) && cleanValue(row["Nama area"]))
+    .sort((a, b) => Number(a.Urutan || 0) - Number(b.Urutan || 0))
+    .map((row) => ({
+      description: null,
+      name: cleanValue(row["Nama area"]),
+      slug: cleanValue(row.Slug),
+    }));
+}
+
+function parseResearchMetrics(block: string): ResearchMetric[] {
+  return parseMarkdownTableAfterHeading(block, "### Verified Metrics Opsional")
+    .map((row) => {
+      const label = cleanValue(row["Nama metrik"]);
+      const value = cleanValue(row.Nilai);
+      const source = cleanValue(row["Sumber verifikasi"]);
+
+      return {
+        evaluationSplit: cleanValue(row["Split evaluasi"]) || null,
+        isVerified: Boolean(label && value && source),
+        label,
+        source: source || null,
+        unit: cleanValue(row.Unit) || null,
+        value,
+      };
+    })
+    .filter((metric) => metric.label && metric.value);
+}
+
+function parseResearchLinks(block: string) {
+  const rows = parseMarkdownTableAfterHeading(block, "### Link Opsional");
+  const links = new Map(rows.map((row) => [cleanValue(row.Jenis), cleanValue(row.URL)]));
+  const repository = privateOrExternalLink(links.get("Repository"));
+  const demo = privateOrExternalLink(links.get("Demo"));
+  const paper = privateOrExternalLink(links.get("Paper atau manuscript"));
+  const dataset = privateOrExternalLink(links.get("Dataset"));
+
+  return {
+    datasetHref: dataset.href,
+    demoHref: demo.href,
+    paperHref: paper.href,
+    repositoryHref: repository.href,
+    repositoryLabel: repository.href ? "Repository" : repository.label || null,
+  };
+}
+
+async function getResearch(researchAreas: ResearchArea[]): Promise<ResearchPreview[]> {
+  const markdown = await readContentFile("riset.md");
+  const areaNameBySlug = new Map(researchAreas.map((area) => [area.slug, area.name]));
 
   return splitItemBlocks(markdown, /^## Research Item \d+/gm)
     .map((block) => {
       const rows = parseTwoColumnRows(block);
+      const slug = getRow(rows, "Slug");
+      const title = getRow(rows, "Judul");
+      const type = getRow(rows, "Tipe");
+      const areaSlugs = splitCsv(rows.get("Research area"));
+      const resultSummary = getRow(rows, "Result summary");
+      const ownership = inferResearchOwnership(slug, title, type);
+      const links = parseResearchLinks(block);
+      const isCxrContext = isYes(rows.get("Gunakan visual CXR kontekstual?"));
+
       return {
-        areas: splitCsv(rows.get("Research area")),
+        areaSlugs,
+        areas: areaSlugs.map((slugItem) => areaNameBySlug.get(slugItem) ?? slugItem),
         coverPath: assetExists(rows.get("Cover image opsional")),
+        dataset: getRow(rows, "Dataset atau sumber data") || null,
+        datasetHref: links.datasetHref,
+        demoHref: links.demoHref,
         isFeatured: isYes(rows.get("Unggulan di homepage?")),
-        slug: getRow(rows, "Slug"),
+        isCxrContext,
+        limitations: getRow(rows, "Limitasi") || null,
+        method: getRow(rows, "Metode atau approach") || null,
+        metrics: parseResearchMetrics(block),
+        objective: getRow(rows, "Tujuan atau problem") || null,
+        order: Number(getRow(rows, "Urutan")) || 0,
+        ownership,
+        paperHref: links.paperHref,
+        repositoryHref: links.repositoryHref,
+        repositoryLabel: links.repositoryLabel,
+        reproducibilityNote: getRow(rows, "Reproducibility note") || null,
+        resultSummary: resultSummary || null,
+        slug,
+        stage: inferResearchStage(slug, resultSummary, ownership),
         status: getRow(rows, "Status publikasi CMS"),
         summary: getRow(rows, "Ringkasan singkat"),
         tags: splitCsv(rows.get("Tags")),
-        title: getRow(rows, "Judul"),
+        title,
         tools: splitCsv(rows.get("Tools atau model")),
-        type: getRow(rows, "Tipe"),
+        type,
+        typeLabel: normalizeResearchType(type),
+        visualKind: inferResearchVisualKind(areaSlugs, type, isCxrContext),
         year: getRow(rows, "Tahun") || null,
       };
     })
     .filter((item) => item.status === "terbit")
-    .sort((a, b) => Number(b.isFeatured) - Number(a.isFeatured));
+    .sort((a, b) => Number(b.isFeatured) - Number(a.isFeatured) || a.order - b.order);
 }
 
 async function getProjects(): Promise<ProjectPreview[]> {
@@ -550,7 +750,7 @@ export async function getPortfolioContent(): Promise<PortfolioContent> {
     profile,
     projects,
     publications,
-    research,
+    researchAreas,
     settings,
     skills,
   ] = await Promise.all([
@@ -560,10 +760,11 @@ export async function getPortfolioContent(): Promise<PortfolioContent> {
     getProfile(),
     getProjects(),
     getPublications(),
-    getResearch(),
+    getResearchAreas(),
     getSettings(),
     getSkills(),
   ]);
+  const research = await getResearch(researchAreas);
 
   return {
     experience,
@@ -573,6 +774,7 @@ export async function getPortfolioContent(): Promise<PortfolioContent> {
     projects,
     publications,
     research,
+    researchAreas,
     settings,
     skills,
   };

@@ -2,7 +2,17 @@
 
 import { useEffect, useRef } from "react";
 
-type CursorMode = "drag" | "external" | "inspect" | "lock" | "native" | "text" | "track";
+type CursorMode =
+  | "drag"
+  | "external"
+  | "filter"
+  | "inspect"
+  | "lock"
+  | "native"
+  | "navigate"
+  | "text"
+  | "trace"
+  | "track";
 
 const sectionCodes: Record<string, string> = {
   "#about": "SEC.01 / ABOUT",
@@ -18,7 +28,7 @@ const sectionCodes: Record<string, string> = {
 
 function closestInteractive(element: Element | null) {
   return element?.closest<HTMLElement>(
-    "a, button, [role='button'], [role='tab'], .hero-core, input, textarea, select, [contenteditable='true']",
+    "a, button, [role='button'], [role='tab'], [data-cursor], .hero-core, input, textarea, select, [contenteditable='true']",
   ) ?? null;
 }
 
@@ -35,9 +45,39 @@ function resolveCursorLabel(target: HTMLElement | null, isDragging: boolean) {
     return { label: "", mode: "track" as CursorMode };
   }
 
+  const explicitCursor = target.closest<HTMLElement>("[data-cursor]");
+  const explicitLabel = explicitCursor?.dataset.cursor;
+  if (explicitLabel) {
+    const normalized = explicitLabel.toUpperCase();
+    if (normalized.includes("FILTER")) {
+      return { label: "FILTER", mode: "filter" as CursorMode };
+    }
+    if (normalized.includes("NAVIGATE")) {
+      return { label: "NAVIGATE", mode: "navigate" as CursorMode };
+    }
+    if (normalized.includes("TRACE")) {
+      return { label: "TRACE", mode: "trace" as CursorMode };
+    }
+    if (normalized.includes("EXTERNAL")) {
+      return { label: "EXTERNAL", mode: "external" as CursorMode };
+    }
+    if (normalized.includes("DOSSIER")) {
+      return { label: normalized, mode: "inspect" as CursorMode };
+    }
+    if (normalized.includes("SIGNAL")) {
+      return { label: normalized, mode: "lock" as CursorMode };
+    }
+    if (normalized.includes("INSPECT")) {
+      return { label: "INSPECT", mode: "inspect" as CursorMode };
+    }
+    if (normalized.includes("CLOSE")) {
+      return { label: "CLOSE", mode: "lock" as CursorMode };
+    }
+  }
+
   if (
-    target.matches("input, textarea, select, [contenteditable='true']") ||
-    target.closest("input, textarea, select, [contenteditable='true']")
+    target.matches("input, textarea, [contenteditable='true']") ||
+    target.closest("input, textarea, [contenteditable='true']")
   ) {
     return { label: "", mode: "native" as CursorMode };
   }
@@ -234,6 +274,8 @@ export function MissionControlCursor() {
         targetRect &&
         pointer.mode !== "native" &&
         pointer.mode !== "text" &&
+        pointer.mode !== "filter" &&
+        pointer.target?.dataset.cursorMagnetic !== "false" &&
         !reduceMotion
       ) {
         const centerX = targetRect.left + targetRect.width / 2;

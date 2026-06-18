@@ -14,6 +14,7 @@ import {
 import { HolographicPlanetCore } from "@/components/visual/holographic-planet-core.client";
 import { MissionTabs } from "@/components/sections/mission-tabs.client";
 import { ProfileSignalCard } from "@/components/sections/profile-signal-card.client";
+import { ResearchObservatory } from "@/components/sections/research-observatory.client";
 import { SkillMatrixCard } from "@/components/sections/skill-matrix-card.client";
 import { cn } from "@/lib/utils";
 import {
@@ -21,6 +22,7 @@ import {
   type ExperiencePreview,
   type OrganizationPreview,
   type ProjectPreview,
+  type ResearchArea,
   type ResearchPreview,
   type SkillGroup,
   type SocialLink,
@@ -284,46 +286,20 @@ function MissionControlSection({
   );
 }
 
-function ResearchPreviewSection({ research }: { research: ResearchPreview[] }) {
+function ResearchPreviewSection({
+  areas,
+  research,
+}: {
+  areas: ResearchArea[];
+  research: ResearchPreview[];
+}) {
   return (
     <SectionShell id="research">
       <div className="orbital-container">
         <SectionLabel>Research Preview</SectionLabel>
-
-        {research.length > 0 ? (
-          <div className="mt-8 grid gap-6 lg:grid-cols-2">
-            {research.slice(0, 2).map((item) => (
-              <ConsolePanel
-                contentClassName="grid gap-5"
-                eyebrow={item.type || "Research"}
-                key={item.slug}
-                title={item.title}
-              >
-                <VisualFallback label="Research signal" />
-                <div className="flex flex-wrap gap-2">
-                  <StatusBadge variant="info">{item.year || "Year pending"}</StatusBadge>
-                  <StatusBadge variant="muted">{item.status}</StatusBadge>
-                </div>
-                <p className="text-base leading-7 text-muted">{item.summary}</p>
-                <div className="flex flex-wrap gap-2">
-                  {[...item.areas, ...item.tools, ...item.tags].slice(0, 8).map((tag) => (
-                    <DataChip key={`${item.slug}-${tag}`} variant="blue">
-                      {tag}
-                    </DataChip>
-                  ))}
-                </div>
-              </ConsolePanel>
-            ))}
-          </div>
-        ) : (
-          <div className="mt-10">
-            <EmptyState
-              description="No published research preview is available from the local content source."
-              eyebrow="Research queue"
-              title="Research preview empty"
-            />
-          </div>
-        )}
+        <div className="mt-8">
+          <ResearchObservatory areas={areas} research={research} />
+        </div>
       </div>
     </SectionShell>
   );
@@ -662,7 +638,10 @@ export default async function HomePage() {
           profile={content.profile}
           skills={content.skills}
         />
-        <ResearchPreviewSection research={content.research} />
+        <ResearchPreviewSection
+          areas={content.researchAreas}
+          research={content.research}
+        />
         <ProjectPreviewSection projects={content.projects} />
         <PublicationPreviewSection publications={content.publications} />
         <ExperiencePreviewSection experience={content.experience} />
