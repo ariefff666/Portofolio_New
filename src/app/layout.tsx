@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { JetBrains_Mono, Space_Grotesk } from "next/font/google";
 import { InteractiveBackground } from "@/components/visual/interactive-background.client";
+import { MissionControlCursor } from "@/components/visual/mission-control-cursor.client";
 import "./globals.css";
 
 const spaceGrotesk = Space_Grotesk({
@@ -52,6 +53,7 @@ export default function RootLayout({
           Skip to content
         </a>
         <InteractiveBackground />
+        <MissionControlCursor />
         {children}
       </body>
     </html>

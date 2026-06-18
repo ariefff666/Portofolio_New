@@ -14,6 +14,7 @@ import {
 import { HolographicPlanetCore } from "@/components/visual/holographic-planet-core.client";
 import { MissionTabs } from "@/components/sections/mission-tabs.client";
 import { ProfileSignalCard } from "@/components/sections/profile-signal-card.client";
+import { SkillMatrixCard } from "@/components/sections/skill-matrix-card.client";
 import { cn } from "@/lib/utils";
 import {
   getPortfolioContent,
@@ -237,19 +238,24 @@ function MissionControlSection({
     "PyTorch",
     "React",
     "TypeScript",
+    "Git",
+    "Github",
+    "Figma",
+    "Firebase",
+    "Supabase",
   ];
   const availableSkills = skills.flatMap((group) => group.skills.map((skill) => skill.name));
   const stackItems = preferredStack
     .filter((item) => availableSkills.includes(item))
     .concat(availableSkills.filter((item) => !preferredStack.includes(item)))
-    .slice(0, 7);
+    .slice(0, 10);
 
   return (
     <SectionShell id="about">
       <div className="orbital-container">
         <SectionLabel>Mission Control</SectionLabel>
 
-        <div className="mt-8 grid gap-6 lg:grid-cols-[22rem_minmax(0,1fr)] xl:grid-cols-[24rem_minmax(0,1fr)]">
+        <div className="mt-8 grid gap-6 lg:grid-cols-[22rem_minmax(0,1fr)] lg:items-start xl:grid-cols-[24rem_minmax(0,1fr)]">
           <ProfileSignalCard
             availability={profile.availability}
             focusItems={profile.currentFocus}
@@ -261,14 +267,17 @@ function MissionControlSection({
             stackItems={stackItems}
             university={profile.university}
           />
-          <MissionTabs
-            communitySummary={profile.communitySummary}
-            currentFocus={profile.currentFocus}
-            missionObjective={profile.missionObjective}
-            organizations={organizations}
-            personalMission={profile.personalMission}
-            researchDirection={profile.shortProfile}
-          />
+          <div className="grid gap-6 lg:h-[60.5rem] lg:grid-rows-[35.5rem_23.5rem]">
+            <MissionTabs
+              communitySummary={profile.communitySummary}
+              currentFocus={profile.currentFocus}
+              missionObjective={profile.missionObjective}
+              organizations={organizations}
+              personalMission={profile.personalMission}
+              researchDirection={profile.shortProfile}
+            />
+            <SkillMatrixCard groups={skills} />
+          </div>
         </div>
       </div>
     </SectionShell>
@@ -401,55 +410,6 @@ function ProjectPreviewSection({ projects }: { projects: ProjectPreview[] }) {
               description="No published project preview is available from the local content source."
               eyebrow="Project bay"
               title="Project preview empty"
-            />
-          </div>
-        )}
-      </div>
-    </SectionShell>
-  );
-}
-
-function SkillPreviewSection({ skills }: { skills: SkillGroup[] }) {
-  const publicSkillGroups = skills
-    .map((group) => ({
-      ...group,
-      skills: group.skills.filter((skill) => !/admin/i.test(skill.name)),
-    }))
-    .filter((group) => group.skills.length > 0);
-
-  return (
-    <SectionShell id="skills">
-      <div className="orbital-container">
-        <SectionLabel>Skill Preview</SectionLabel>
-
-        {publicSkillGroups.length > 0 ? (
-          <div className="mt-8 grid gap-6 md:grid-cols-2 xl:grid-cols-3">
-            {publicSkillGroups.map((group) => (
-              <ConsolePanel eyebrow="Capability Cluster" key={group.name} title={group.name}>
-                <ul className="grid gap-3">
-                  {group.skills.map((skill) => (
-                    <li
-                      className="flex min-h-12 items-center justify-between gap-4 rounded-control border border-line bg-bg-navy/55 px-3 py-2"
-                      key={`${group.name}-${skill.name}`}
-                    >
-                      <span className="text-sm font-semibold text-text">{skill.name}</span>
-                      {skill.level ? (
-                        <span className="shrink-0 font-mono text-xs uppercase tracking-[0.12em] text-muted">
-                          {skill.level}
-                        </span>
-                      ) : null}
-                    </li>
-                  ))}
-                </ul>
-              </ConsolePanel>
-            ))}
-          </div>
-        ) : (
-          <div className="mt-10">
-            <EmptyState
-              description="No active skill group is available from the local content source."
-              eyebrow="Capability matrix"
-              title="Skill preview empty"
             />
           </div>
         )}
@@ -704,7 +664,6 @@ export default async function HomePage() {
         />
         <ResearchPreviewSection research={content.research} />
         <ProjectPreviewSection projects={content.projects} />
-        <SkillPreviewSection skills={content.skills} />
         <PublicationPreviewSection publications={content.publications} />
         <ExperiencePreviewSection experience={content.experience} />
         <ContactTransmissionSection

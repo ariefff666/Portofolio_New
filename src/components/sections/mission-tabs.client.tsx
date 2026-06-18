@@ -43,7 +43,7 @@ export function MissionTabs({
     organizations[0];
 
   return (
-    <section className="mission-tabs rounded-panel border border-line bg-panel-solid/90">
+    <section className="mission-tabs flex flex-col overflow-hidden rounded-panel border border-line bg-panel-solid/90 lg:h-[35.5rem]">
       <header className="flex min-h-14 flex-wrap items-center justify-between gap-3 border-b border-line px-5 py-4">
         <div>
           <p className="font-mono text-xs font-medium uppercase tracking-[0.18em] text-cyan">
@@ -73,53 +73,73 @@ export function MissionTabs({
         </div>
       </div>
 
-      <div className="mission-tab-panel min-h-[24rem] p-5" role="tabpanel">
+      <div className="mission-tab-panel flex flex-1 flex-col p-5" role="tabpanel">
         {activeTab === "trajectory" ? (
-          <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_16rem]">
-            <div>
+          <div className="mission-tab-content grid gap-5 lg:grid-cols-[minmax(0,1fr)_16rem]">
+            <div className="rounded-control border border-line bg-bg-navy/45 p-4">
               <p className="font-mono text-xs uppercase tracking-[0.18em] text-cyan">
                 Current trajectory
               </p>
-              <p className="mt-4 text-base leading-8 text-muted">
+              <p className="mt-4 text-sm leading-7 text-muted">
                 {missionObjective || "Mission objective has not been published yet."}
               </p>
-            </div>
-            <div className="rounded-control border border-line bg-bg-navy/55 p-4">
-              <p className="font-mono text-xs uppercase tracking-[0.16em] text-muted">
-                Focus packets
-              </p>
-              <div className="mt-3 flex flex-wrap gap-2">
-                {currentFocus.length > 0 ? (
-                  currentFocus.map((focus) => (
-                    <span
-                      className="rounded-chip border border-cyan/35 bg-cyan/10 px-2.5 py-1 font-mono text-[0.68rem] uppercase tracking-[0.12em] text-cyan"
-                      key={focus}
+              <div className="mt-5 grid gap-3 sm:grid-cols-3 lg:grid-cols-1">
+                {["Research experiments", "Product systems", "Campus initiatives"].map(
+                  (item) => (
+                    <div
+                      className="rounded-control border border-line bg-bg-void/35 p-3"
+                      key={item}
                     >
-                      {focus}
-                    </span>
-                  ))
-                ) : (
-                  <span className="text-sm text-muted">Focus data pending.</span>
+                      <p className="font-mono text-[0.68rem] uppercase tracking-[0.14em] text-muted">
+                        {item}
+                      </p>
+                    </div>
+                  ),
                 )}
+              </div>
+            </div>
+            <div className="grid gap-3">
+              <div className="rounded-control border border-line bg-bg-navy/55 p-4">
+                <p className="font-mono text-xs uppercase tracking-[0.16em] text-muted">
+                  Focus packets
+                </p>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {currentFocus.length > 0 ? (
+                    currentFocus.map((focus) => (
+                      <span
+                        className="rounded-chip border border-cyan/35 bg-cyan/10 px-2.5 py-1 font-mono text-[0.68rem] uppercase tracking-[0.12em] text-cyan"
+                        key={focus}
+                      >
+                        {focus}
+                      </span>
+                    ))
+                  ) : (
+                    <span className="text-sm text-muted">Focus data pending.</span>
+                  )}
+                </div>
               </div>
             </div>
           </div>
         ) : null}
 
         {activeTab === "principles" ? (
-          <div className="grid gap-5 md:grid-cols-[minmax(0,1fr)_13rem]">
-            <div>
+          <div className="mission-tab-content grid gap-5 md:grid-cols-[minmax(0,1fr)_14rem]">
+            <div className="rounded-control border border-line bg-bg-navy/45 p-4">
               <p className="font-mono text-xs uppercase tracking-[0.18em] text-cyan">
                 Operating principle
               </p>
-              <p className="mt-4 text-base leading-8 text-muted">
+              <p className="mt-4 text-sm leading-7 text-muted">
                 {personalMission || "Personal mission has not been published yet."}
               </p>
+              <p className="mt-4 text-sm leading-7 text-muted">
+                The portfolio is structured around traceable source content, practical
+                implementation, and interfaces that keep research context readable.
+              </p>
             </div>
-            <div className="grid gap-3">
+            <div className="grid content-start gap-3">
               {["Evidence first", "Useful systems", "Readable craft"].map((item) => (
                 <div
-                  className="rounded-control border border-line bg-bg-navy/55 p-3"
+                  className="rounded-control border border-line bg-bg-navy/55 p-4"
                   key={item}
                 >
                   <p className="font-mono text-[0.68rem] uppercase tracking-[0.14em] text-cyan">
@@ -132,17 +152,19 @@ export function MissionTabs({
         ) : null}
 
         {activeTab === "research" ? (
-          <div className="grid gap-5">
-            <p className="font-mono text-xs uppercase tracking-[0.18em] text-cyan">
-              Research direction
-            </p>
-            <p className="max-w-3xl text-base leading-8 text-muted">
-              {researchDirection || "Research direction copy has not been published yet."}
-            </p>
+          <div className="mission-tab-content grid gap-5">
+            <div className="rounded-control border border-line bg-bg-navy/45 p-4">
+              <p className="font-mono text-xs uppercase tracking-[0.18em] text-cyan">
+                Research direction
+              </p>
+              <p className="mt-4 max-w-3xl text-sm leading-7 text-muted">
+                {researchDirection || "Research direction copy has not been published yet."}
+              </p>
+            </div>
             <div className="grid gap-3 sm:grid-cols-3">
               {["Computer Vision", "Deep Learning", "NLP"].map((item) => (
                 <div
-                  className="rounded-control border border-line bg-bg-navy/55 p-4 transition duration-200 hover:border-cyan hover:bg-cyan/10 motion-reduce:transition-none"
+                  className="min-h-28 rounded-control border border-line bg-bg-navy/55 p-4 transition duration-200 hover:border-cyan hover:bg-cyan/10 motion-reduce:transition-none"
                   key={item}
                 >
                   <p className="font-mono text-xs uppercase tracking-[0.14em] text-text">
@@ -155,7 +177,7 @@ export function MissionTabs({
         ) : null}
 
         {activeTab === "community" ? (
-          <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_18rem]">
+          <div className="mission-tab-content grid gap-5 lg:grid-cols-[minmax(0,1fr)_18rem]">
             <div>
               <p className="font-mono text-xs uppercase tracking-[0.18em] text-cyan">
                 Community nodes
