@@ -178,13 +178,17 @@ export function InteractiveBackground() {
 
         const pulse = 0.55 + Math.sin(time * 1.7 + particle.phase) * 0.45;
         const alpha = particle.amber
-          ? 0.16 + pulse * 0.12 + influence * 0.16
-          : 0.12 + pulse * 0.1 + influence * 0.22;
-        const radius = (particle.amber ? 1.35 : 1.1) + influence * 1.25;
+          ? 0.24 + pulse * 0.15 + influence * 0.2
+          : 0.2 + pulse * 0.16 + influence * 0.28;
+        const radius = (particle.amber ? 1.55 : 1.35) + influence * 1.45;
+        const color = particle.amber ? "255, 209, 102" : "85, 230, 255";
 
-        ctx.fillStyle = particle.amber
-          ? `rgba(255, 209, 102, ${alpha})`
-          : `rgba(85, 230, 255, ${alpha})`;
+        ctx.fillStyle = `rgba(${color}, ${alpha * (0.16 + influence * 0.18)})`;
+        ctx.beginPath();
+        ctx.arc(x, y, radius * (2.8 + influence * 0.9), 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.fillStyle = `rgba(${color}, ${alpha})`;
         ctx.beginPath();
         ctx.arc(x, y, radius, 0, Math.PI * 2);
         ctx.fill();

@@ -315,12 +315,14 @@ function ResearchDossier({
 }
 
 function ResearchCard({
+  compact,
   featured,
   isSelected,
   item,
   onInspect,
   onSignal,
 }: {
+  compact?: boolean;
   featured?: boolean;
   isSelected: boolean;
   item: ResearchPreview;
@@ -332,7 +334,8 @@ function ResearchCard({
       className={cn(
         "research-card group relative overflow-hidden rounded-panel border border-line bg-panel-solid/90 transition duration-200 motion-reduce:transition-none",
         "focus-within:border-cyan hover:border-cyan/70",
-        featured && "lg:grid lg:grid-cols-[minmax(18rem,0.95fr)_minmax(0,1fr)]",
+        compact && "research-card--compact lg:grid lg:grid-cols-[minmax(15rem,0.62fr)_minmax(0,1fr)]",
+        featured && "research-card--featured lg:grid lg:grid-cols-[minmax(20rem,0.95fr)_minmax(0,1fr)]",
         isSelected && "research-card--selected border-cyan/80",
       )}
       data-card-slug={item.slug}
@@ -346,10 +349,10 @@ function ResearchCard({
       <span className="research-corner research-corner--tr" aria-hidden="true" />
       <span className="research-corner research-corner--bl" aria-hidden="true" />
       <span className="research-corner research-corner--br" aria-hidden="true" />
-      <div className={cn("p-4", featured && "lg:p-5")}>
+      <div className={cn("p-4", featured && "lg:p-5", compact && "lg:p-4")}>
         <ResearchInstrument item={item} />
       </div>
-      <div className={cn("flex flex-col p-5 pt-0", featured && "lg:p-5 lg:pl-0")}>
+      <div className={cn("flex flex-col p-5 pt-0", featured && "lg:p-5 lg:pl-0", compact && "lg:p-4 lg:pl-0")}>
         <div className="flex flex-wrap gap-2">
           <span
             className="rounded-chip border border-cyan/35 bg-cyan/10 px-2.5 py-1 font-mono text-[0.68rem] uppercase tracking-[0.12em] text-cyan"
@@ -361,10 +364,10 @@ function ResearchCard({
             {compactType(item.typeLabel)}
           </span>
         </div>
-        <h3 className={cn("mt-4 font-semibold leading-tight text-text", featured ? "text-2xl" : "text-lg")}>
+        <h3 className={cn("mt-4 font-semibold leading-tight text-text", featured ? "text-2xl lg:text-3xl" : "text-lg")}>
           {item.title}
         </h3>
-        <p className={cn("mt-3 text-sm leading-6 text-muted", featured ? "line-clamp-3" : "line-clamp-2")}>
+        <p className={cn("mt-3 text-sm leading-6 text-muted", featured ? "line-clamp-4" : "line-clamp-2")}>
           {item.summary}
         </p>
         <div className="mt-4 flex flex-wrap gap-2">
@@ -433,6 +436,8 @@ export function ResearchObservatory({ areas, research }: ResearchObservatoryProp
   const standardItems = featuredItem
     ? pageItems.filter((item) => item.slug !== featuredItem.slug)
     : pageItems;
+  const activeSignalItem =
+    research.find((item) => item.slug === (activeSignalSlug ?? selectedSlug)) ?? null;
   const selectedItem = research.find((item) => item.slug === selectedSlug) ?? null;
   const activeAreaName = areas.find((area) => area.slug === activeArea)?.name ?? "All Research Areas";
 
@@ -571,9 +576,6 @@ export function ResearchObservatory({ areas, research }: ResearchObservatoryProp
       <div className="relative z-10 grid gap-6">
         <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(18rem,22rem)] lg:items-end">
           <div>
-            <p className="font-mono text-xs font-semibold uppercase tracking-[0.22em] text-cyan">
-              Research Observatory
-            </p>
             <h2 className="mt-3 max-w-3xl text-3xl font-semibold leading-tight text-text sm:text-4xl">
               Exploring Intelligent Systems
             </h2>
@@ -594,6 +596,25 @@ export function ResearchObservatory({ areas, research }: ResearchObservatoryProp
                 <span>Active</span>
                 <strong>{activeExperiments}</strong>
               </span>
+            </div>
+            <div className="research-trace-readout mt-5" aria-live="polite">
+              <div>
+                <p>Signal Trace</p>
+                <strong>{activeSignalItem?.title ?? "Awaiting research signal"}</strong>
+              </div>
+              <div className="research-trace-route" aria-hidden="true">
+                {(activeSignalItem
+                  ? [
+                      activeSignalItem.areas[0] ?? "Research",
+                      activeSignalItem.typeLabel,
+                      activeSignalItem.stage,
+                      ownershipCode(activeSignalItem.ownership),
+                    ]
+                  : ["Area", "Type", "Status", "Dossier"]
+                ).map((node) => (
+                  <span key={node}>{node}</span>
+                ))}
+              </div>
             </div>
           </div>
 
@@ -663,6 +684,7 @@ export function ResearchObservatory({ areas, research }: ResearchObservatoryProp
                 >
                   {standardItems.map((item) => (
                     <ResearchCard
+                      compact={Boolean(featuredItem && standardItems.length === 1)}
                       isSelected={selectedSlug === item.slug}
                       item={item}
                       key={item.slug}

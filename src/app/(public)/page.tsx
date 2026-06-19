@@ -296,7 +296,7 @@ function ResearchPreviewSection({
   return (
     <SectionShell id="research">
       <div className="orbital-container">
-        <SectionLabel>Research Preview</SectionLabel>
+        <SectionLabel>Research Observatory</SectionLabel>
         <div className="mt-8">
           <ResearchObservatory areas={areas} research={research} />
         </div>
@@ -348,7 +348,7 @@ function ProjectPreviewSection({ projects }: { projects: ProjectPreview[] }) {
 
         {projects.length > 0 ? (
           <div className="mt-8 grid gap-6 md:grid-cols-2 xl:grid-cols-4">
-            {projects.slice(0, 4).map((project) => (
+            {projects.map((project) => (
               <ConsolePanel
                 contentClassName="grid gap-4"
                 eyebrow={project.category || "Project"}

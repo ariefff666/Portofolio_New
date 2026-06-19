@@ -98,6 +98,7 @@ export type ProjectPreview = {
   coverPath: string | null;
   demoHref: string | null;
   isFeatured: boolean;
+  order: number;
   problem: string | null;
   repositoryHref: string | null;
   repositoryLabel: string | null;
@@ -351,7 +352,14 @@ function splitItemBlocks(markdown: string, marker: RegExp) {
 
   return matches.map((match, index) => {
     const start = match.index ?? 0;
-    const end = matches[index + 1]?.index ?? markdown.length;
+    const fallbackEnd = matches[index + 1]?.index ?? markdown.length;
+    const nextHeadingOffset = markdown
+      .slice(start + match[0].length)
+      .search(/\r?\n## /);
+    const end =
+      nextHeadingOffset === -1
+        ? fallbackEnd
+        : Math.min(fallbackEnd, start + match[0].length + nextHeadingOffset);
     return markdown.slice(start, end);
   });
 }
@@ -610,7 +618,7 @@ async function getResearch(researchAreas: ResearchArea[]): Promise<ResearchPrevi
         year: getRow(rows, "Tahun") || null,
       };
     })
-    .filter((item) => item.status === "terbit")
+    .filter((item) => ["draf", "terbit"].includes(item.status.toLowerCase()) && item.slug && item.title)
     .sort((a, b) => Number(b.isFeatured) - Number(a.isFeatured) || a.order - b.order);
 }
 
@@ -628,6 +636,7 @@ async function getProjects(): Promise<ProjectPreview[]> {
         coverPath: assetExists(getRow(rows, "Cover image", "Cover image opsional")),
         demoHref: publicHref(rows.get("Demo")),
         isFeatured: isYes(rows.get("Unggulan di homepage?")),
+        order: Number(getRow(rows, "Urutan")) || 0,
         problem: getRow(rows, "Problem") || null,
         repositoryHref,
         repositoryLabel: repositoryHref ? "Repository" : cleanValue(repositoryRaw) || null,
@@ -641,8 +650,8 @@ async function getProjects(): Promise<ProjectPreview[]> {
         year: getRow(rows, "Tahun") || null,
       };
     })
-    .filter((item) => item.status === "terbit")
-    .sort((a, b) => Number(b.isFeatured) - Number(a.isFeatured));
+    .filter((item) => ["draf", "terbit"].includes(item.status.toLowerCase()) && item.slug && item.title)
+    .sort((a, b) => Number(b.isFeatured) - Number(a.isFeatured) || a.order - b.order);
 }
 
 async function getSkills(): Promise<SkillGroup[]> {

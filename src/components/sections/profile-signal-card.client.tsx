@@ -54,12 +54,12 @@ export function ProfileSignalCard({
     const rect = card.getBoundingClientRect();
     const x = (event.clientX - rect.left) / rect.width - 0.5;
     const y = (event.clientY - rect.top) / rect.height - 0.5;
-    card.style.setProperty("--profile-tilt-x", `${y * -10}deg`);
-    card.style.setProperty("--profile-tilt-y", `${x * 12}deg`);
-    card.style.setProperty("--profile-depth-x", `${x * 16}px`);
-    card.style.setProperty("--profile-depth-y", `${y * 16}px`);
-    card.style.setProperty("--profile-layer-x", `${x * -12}px`);
-    card.style.setProperty("--profile-layer-y", `${y * -12}px`);
+    card.style.setProperty("--profile-tilt-x", `${y * -17}deg`);
+    card.style.setProperty("--profile-tilt-y", `${x * 20}deg`);
+    card.style.setProperty("--profile-depth-x", `${x * 28}px`);
+    card.style.setProperty("--profile-depth-y", `${y * 28}px`);
+    card.style.setProperty("--profile-layer-x", `${x * -24}px`);
+    card.style.setProperty("--profile-layer-y", `${y * -24}px`);
     card.style.setProperty("--profile-glow-x", `${event.clientX - rect.left}px`);
     card.style.setProperty("--profile-glow-y", `${event.clientY - rect.top}px`);
   }
